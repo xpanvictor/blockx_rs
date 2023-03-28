@@ -1,7 +1,6 @@
 use std::io;
 use crate::constants;
 use crate::block::Block;
-use utils::Utils;
 use crate::utils::Utils;
 
 pub struct DB<'a> {

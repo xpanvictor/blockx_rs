@@ -1,7 +1,8 @@
-
+use std::fmt::format;
 use crate::constants;
 use chrono::prelude::Utc;
 use crate::db::{DB};
+use crate::utils::Utils;
 
 /// This is the block main file
 /// It contains the block DS and implementations
@@ -20,12 +21,21 @@ pub struct Block<'a> {
 /// Implementations for block data structure
 impl<'b> Block<'b> {
     pub fn new<'a>(data: &str, latest_block: &'a Block) -> Block<'a> {
+
+        let index = latest_block.index + 1;
+        let timestamp = Utc::now().timestamp_millis();
+        let prev_hash = &latest_block.hash;
+
+        let block_merge =
+            format!("{}{}{}{}", index, data, timestamp, prev_hash);
+
+        let block_hash = Utils::hash(&block_merge);
+
         Block {
-            // generate index from db
-            index: latest_block.index + 1,
+            index,
             data: String::from(data),
-            timestamp: Utc::now().timestamp_millis(),
-            hash: String::from("hey"),
+            timestamp,
+            hash: block_hash,
             prev_hash: &latest_block.hash
         }
     }
@@ -41,7 +51,11 @@ mod tests {
         let db = DB::new();
         let retrieved_block: &Block = db.get_genesis().unwrap();
 
-        assert_eq!(retrieved_block.hash, constants::GEN_HASH, "Generic hash isn't correct");
+        let block_merge =
+            format!("{}{}{}{}", 0, retrieved_block.data, retrieved_block.timestamp, retrieved_block.prev_hash);
+        let block_hash = Utils::hash(&block_merge);
+
+        assert_eq!(block_hash, constants::GEN_HASH, "Invalid generic hash, hasher faulty.");
         assert_eq!(retrieved_block.index, 0, "Genesis index must be zero");
         assert_eq!(retrieved_block.timestamp, constants::START_TIME);
     }

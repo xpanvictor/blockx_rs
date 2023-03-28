@@ -43,7 +43,7 @@ impl<'b> Block<'b> {
         format!("{}{}{}{}", index, data, timestamp, prev_hash)
     }
 
-    pub fn validate_block(&self, prev_block: &Block) -> Result<&Block, &str> {
+    pub fn validate_block(&self, prev_block: &Block) -> Result<(), &str> {
         let block_merge = Block::block_merge(self.index, &self.data, self.timestamp, self.prev_hash);
         // is prev hash the prev block's hash
         return if self.prev_hash != prev_block.hash {
@@ -53,7 +53,7 @@ impl<'b> Block<'b> {
         } else if Utils::hash(&block_merge) != self.hash {
             Err("Invalid block, hash doesn't correlate with data")
         } else {
-            Ok(&self)
+            Ok(())
         }
     }
 }
@@ -83,7 +83,7 @@ mod tests {
         let prev_block = db.latest_block().unwrap();
         let new_block = Block::new(data, &prev_block);
 
-        assert_eq!(new_block.index, prev_block.index + 1, "Mined block isn't an index higher than prev");
+        assert_eq!(new_block.index, prev_block.index + 1, "Mined block isn't one index higher than prev");
         assert_eq!(new_block.prev_hash, prev_block.hash, "Mined block's prev hash isn't prev block's hash!");
         assert_eq!(new_block.data, data, "Mined block's data malformed");
     }

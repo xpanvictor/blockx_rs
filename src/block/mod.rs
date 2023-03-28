@@ -40,8 +40,9 @@ mod tests {
     fn generate_genesis_block() {
         let db = DB::new();
         let retrieved_block: &Block = db.get_genesis().unwrap();
-        assert_eq!(retrieved_block.hash, constants::GEN_HASH);
-        assert_eq!(retrieved_block.index, 0);
+
+        assert_eq!(retrieved_block.hash, constants::GEN_HASH, "Generic hash isn't correct");
+        assert_eq!(retrieved_block.index, 0, "Genesis index must be zero");
         assert_eq!(retrieved_block.timestamp, constants::START_TIME);
     }
 
@@ -52,8 +53,8 @@ mod tests {
         let prev_block = db.latest_block().unwrap();
         let new_block = Block::new(data, &prev_block);
 
-        assert_eq!(new_block.index, prev_block.index + 1);
-        assert_eq!(new_block.prev_hash, prev_block.hash);
-        assert_eq!(new_block.data, data);
+        assert_eq!(new_block.index, prev_block.index + 1, "Mined block isn't an index higher than prev");
+        assert_eq!(new_block.prev_hash, prev_block.hash, "Mined block's prev hash isn't prev block's hash!");
+        assert_eq!(new_block.data, data, "Mined block's data malformed");
     }
 }

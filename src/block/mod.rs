@@ -27,8 +27,7 @@ impl<'b> Block<'b> {
         let timestamp = Utc::now().timestamp_millis();
         let prev_hash = &latest_block.hash;
 
-        let block_merge =
-            format!("{}{}{}{}", index, data, timestamp, prev_hash);
+        let block_merge = Block::block_merge(index, data, timestamp, prev_hash);
         let block_hash = Utils::hash(&block_merge);
 
         Block {
@@ -40,9 +39,12 @@ impl<'b> Block<'b> {
         }
     }
 
+    pub fn block_merge(index: u32, data: &str, timestamp: i64, prev_hash: &str) -> String {
+        format!("{}{}{}{}", index, data, timestamp, prev_hash)
+    }
+
     pub fn validate_block(&self, prev_block: &Block) -> Result<&Block, &str> {
-        let block_merge =
-            format!("{}{}{}{}", self.index, self.data, self.timestamp, self.prev_hash);
+        let block_merge = Block::block_merge(self.index, &self.data, self.timestamp, self.prev_hash);
         // is prev hash the prev block's hash
         return if self.prev_hash != prev_block.hash {
             Err("New block doesn't have old block's hash")
@@ -66,8 +68,7 @@ mod tests {
         let db = DB::new();
         let retrieved_block: &Block = db.get_genesis().unwrap();
 
-        let block_merge =
-            format!("{}{}{}{}", 0, retrieved_block.data, retrieved_block.timestamp, retrieved_block.prev_hash);
+        let block_merge = Block::block_merge(0, &retrieved_block.data, retrieved_block.timestamp, retrieved_block.prev_hash);
         let block_hash = Utils::hash(&block_merge);
 
         assert_eq!(block_hash, constants::GEN_HASH, "Invalid generic hash, hasher faulty.");

@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::fmt::format;
 use crate::constants;
 use chrono::prelude::Utc;
@@ -28,7 +29,6 @@ impl<'b> Block<'b> {
 
         let block_merge =
             format!("{}{}{}{}", index, data, timestamp, prev_hash);
-
         let block_hash = Utils::hash(&block_merge);
 
         Block {
@@ -37,6 +37,21 @@ impl<'b> Block<'b> {
             timestamp,
             hash: block_hash,
             prev_hash: &latest_block.hash
+        }
+    }
+
+    pub fn validate_block(&self, prev_block: &Block) -> Result<&Block, &str> {
+        let block_merge =
+            format!("{}{}{}{}", self.index, self.data, self.timestamp, self.prev_hash);
+        // is prev hash the prev block's hash
+        return if self.prev_hash != prev_block.hash {
+            Err("New block doesn't have old block's hash")
+        } else if self.index != prev_block.index + 1 {
+            Err("New block's index is malformed")
+        } else if Utils::hash(&block_merge) != self.hash {
+            Err("Invalid block, hash doesn't correlate with data")
+        } else {
+            Ok(&self)
         }
     }
 }

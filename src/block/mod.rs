@@ -10,25 +10,27 @@ use crate::utils::Utils;
 
 /// A block structure
 // ? Can I try to implement this as inheritance
-struct UnresolvedBlock<'a> {
-    index: u32,
-    data: &str,
+pub struct UnresolvedBlock<'a> {
+    pub index: u32,
+    data: &'a str,
     prev_hash: &'a str,
     timestamp: i64,
-    difficulty: u32,
+    pub difficulty: u32,
 }
 #[derive(Debug)]
 pub struct Block<'a> {
     pub index: u32,
     pub data: String,
     pub timestamp: i64,
-    pub hash: String,
     pub prev_hash: &'a str,
     // nonce for block's proof of work
     pub nonce: u32,
+    // non hash data
+    pub hash: String,
+    pub difficulty: u32,
 }
 
-struct BlockHashMeta(u32, String);
+pub struct BlockHashMeta(u32, String);
 
 /// Implementations for block data structure
 impl<'b> Block<'b> {
@@ -37,15 +39,16 @@ impl<'b> Block<'b> {
         let index = latest_block.index + 1;
         let timestamp = Utc::now().timestamp_millis();
         let prev_hash = &latest_block.hash;
-        let difficulty = Utils::generate_difficulty();
 
         let unresolved_block = UnresolvedBlock {
             index,
             data,
             prev_hash,
             timestamp,
-            difficulty,
+            difficulty: latest_block.difficulty,
         };
+        // dynamically generate difficulty
+        let difficulty = Utils::generate_difficulty(&unresolved_block);
 
         let BlockHashMeta(nonce, hash) = Block::find_block_hash_meta(unresolved_block);
 
@@ -55,7 +58,8 @@ impl<'b> Block<'b> {
             timestamp,
             hash,
             prev_hash,
-            nonce
+            nonce,
+            difficulty
         }
     }
 
@@ -63,7 +67,7 @@ impl<'b> Block<'b> {
         format!("{}{}{}{}{}", nonce, index, data, timestamp, prev_hash)
     }
 
-    pub fn find_block_hash_meta(block: UnresolvedBlock) -> BlockHashMeta {
+    fn find_block_hash_meta(block: UnresolvedBlock) -> BlockHashMeta {
         let mut nonce = 0;
 
         loop {
@@ -115,7 +119,13 @@ mod tests {
         let db = DB::new();
         let retrieved_block: &Block = db.get_genesis().unwrap();
 
-        let block_merge = Block::block_merge(0, &retrieved_block.data, retrieved_block.timestamp, retrieved_block.prev_hash);
+        let block_merge = Block::block_merge(
+            0,
+            0,
+            &retrieved_block.data,
+            retrieved_block.timestamp,
+            retrieved_block.prev_hash
+        );
         let block_hash = Utils::hash(&block_merge);
 
         assert_eq!(block_hash, constants::GEN_HASH, "Invalid generic hash, hasher faulty.");

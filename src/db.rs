@@ -18,7 +18,7 @@ impl DB<'static> {
                     timestamp: constants::START_TIME,
                     hash: String::from(constants::GEN_HASH),
                     prev_hash: "",
-                    difficulty: 0,
+                    difficulty: 1
                 }
             ]
         }

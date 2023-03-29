@@ -4,4 +4,8 @@ pub mod Utils {
     pub fn hash(values: &str) -> String {
         digest(values)
     }
+
+    pub fn scored_difficulty(hash: &str, difficulty: u32) -> bool {
+        todo!()
+    }
 }

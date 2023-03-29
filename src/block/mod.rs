@@ -16,8 +16,14 @@ pub struct Block<'a> {
     pub data: String,
     pub timestamp: i64,
     pub hash: String,
-    pub prev_hash: &'a str
+    pub prev_hash: &'a str,
+    // nonce for block's proof of work
+    pub nonce: u32,
+    // difficult for block
+    pub difficulty: u32
 }
+
+struct BlockHashMeta(u32, String);
 
 /// Implementations for block data structure
 impl<'b> Block<'b> {
@@ -27,24 +33,54 @@ impl<'b> Block<'b> {
         let timestamp = Utc::now().timestamp_millis();
         let prev_hash = &latest_block.hash;
 
-        let block_merge = Block::block_merge(index, data, timestamp, prev_hash);
-        let block_hash = Utils::hash(&block_merge);
+        let BlockHashMeta(nonce, hash) = Block::mine_block();
 
         Block {
             index,
             data: String::from(data),
             timestamp,
-            hash: block_hash,
-            prev_hash: &latest_block.hash
+            hash,
+            prev_hash,
+            // todo: generate difficulty systematically
+            difficulty: 4,
+            nonce
         }
     }
 
-    pub fn block_merge(index: u32, data: &str, timestamp: i64, prev_hash: &str) -> String {
-        format!("{}{}{}{}", index, data, timestamp, prev_hash)
+    pub fn block_merge(nonce: u32, index: u32, data: &str, timestamp: i64, prev_hash: &str) -> String {
+        format!("{}{}{}{}{}", nonce, index, data, timestamp, prev_hash)
+    }
+
+    pub fn mine_block(block: &Block) -> BlockHashMeta {
+        let mut nonce = 0;
+        let mut difficulty_satisfied = false;
+        let mut block_hash = String::new();
+
+        while !difficulty_satisfied {
+            let block_merge = Block::block_merge(
+                nonce,
+                block.index,
+                &block.data,
+                block.timestamp,
+                block.prev_hash
+            );
+
+            let block_hash = Utils::hash(&block_merge);
+            difficulty_satisfied = Utils::scored_difficulty(&block_hash, block.difficulty);
+            nonce += 1;
+        };
+
+        BlockHashMeta(nonce, block_hash)
     }
 
     pub fn validate_block(&self, prev_block: &Block) -> Result<(), &str> {
-        let block_merge = Block::block_merge(self.index, &self.data, self.timestamp, self.prev_hash);
+        let block_merge = Block::block_merge(
+            self.nonce,
+            self.index,
+            &self.data,
+            self.timestamp,
+            self.prev_hash
+        );
         // is prev hash the prev block's hash
         return if self.prev_hash != prev_block.hash {
             Err("New block doesn't have old block's hash")

@@ -12,11 +12,13 @@ impl DB<'static> {
         DB {
             chain: vec![
                 Block {
+                    nonce: 0,
                     data: String::from("Genesis"),
                     index: 0,
                     timestamp: constants::START_TIME,
                     hash: String::from(constants::GEN_HASH),
-                    prev_hash: ""
+                    prev_hash: "",
+                    difficulty: 0,
                 }
             ]
         }
@@ -46,6 +48,7 @@ impl DB<'static> {
         let genesis_block = self.chain.first().unwrap();
         let cross_genesis = cross_db.chain.first().unwrap();
         let cross_block_merge = Block::block_merge(
+            cross_genesis.nonce,
             cross_genesis.index,
             &cross_genesis.data,
             cross_genesis.timestamp,

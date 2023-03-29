@@ -12,7 +12,6 @@ use crate::utils::Utils;
 #[derive(Debug)]
 pub struct Block<'a> {
     pub index: u32,
-    // todo: get a better data
     pub data: String,
     pub timestamp: i64,
     pub hash: String,
@@ -33,7 +32,7 @@ impl<'b> Block<'b> {
         let timestamp = Utc::now().timestamp_millis();
         let prev_hash = &latest_block.hash;
 
-        let BlockHashMeta(nonce, hash) = Block::mine_block();
+        let BlockHashMeta(nonce, hash) = Block::find_block();
 
         Block {
             index,
@@ -51,12 +50,10 @@ impl<'b> Block<'b> {
         format!("{}{}{}{}{}", nonce, index, data, timestamp, prev_hash)
     }
 
-    pub fn mine_block(block: &Block) -> BlockHashMeta {
+    pub fn find_block(block: &Block) -> BlockHashMeta {
         let mut nonce = 0;
-        let mut difficulty_satisfied = false;
-        let mut block_hash = String::new();
 
-        while !difficulty_satisfied {
+        loop {
             let block_merge = Block::block_merge(
                 nonce,
                 block.index,
@@ -64,13 +61,14 @@ impl<'b> Block<'b> {
                 block.timestamp,
                 block.prev_hash
             );
-
             let block_hash = Utils::hash(&block_merge);
-            difficulty_satisfied = Utils::scored_difficulty(&block_hash, block.difficulty);
-            nonce += 1;
-        };
 
-        BlockHashMeta(nonce, block_hash)
+            if Utils::scored_difficulty(&block_hash, block.difficulty) {
+                break BlockHashMeta(nonce, block_hash)
+            }
+
+            nonce += 1;
+        }
     }
 
     pub fn validate_block(&self, prev_block: &Block) -> Result<(), &str> {

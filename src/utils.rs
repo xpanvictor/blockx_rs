@@ -8,4 +8,8 @@ pub mod Utils {
     pub fn scored_difficulty(hash: &str, difficulty: u32) -> bool {
         todo!()
     }
+    
+    pub fn generate_difficulty() -> u32 {
+        todo!()
+    }
 }

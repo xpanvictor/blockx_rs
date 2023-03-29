@@ -29,6 +29,7 @@ impl DB<'static> {
         block
             .validate_block(self.latest_block().unwrap())
             .unwrap_or_else(|err|{
+                // todo: can't panic, just prevent block from being saved
                 panic!("Operational: {}", err)
             });
         // add block to chain

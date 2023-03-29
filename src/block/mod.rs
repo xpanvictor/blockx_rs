@@ -9,6 +9,14 @@ use crate::utils::Utils;
 /// It contains the block DS and implementations
 
 /// A block structure
+// ? Can I try to implement this as inheritance
+struct UnresolvedBlock<'a> {
+    index: u32,
+    data: &str,
+    prev_hash: &'a str,
+    timestamp: i64,
+    difficulty: u32,
+}
 #[derive(Debug)]
 pub struct Block<'a> {
     pub index: u32,
@@ -18,8 +26,6 @@ pub struct Block<'a> {
     pub prev_hash: &'a str,
     // nonce for block's proof of work
     pub nonce: u32,
-    // difficult for block
-    pub difficulty: u32
 }
 
 struct BlockHashMeta(u32, String);
@@ -31,8 +37,17 @@ impl<'b> Block<'b> {
         let index = latest_block.index + 1;
         let timestamp = Utc::now().timestamp_millis();
         let prev_hash = &latest_block.hash;
+        let difficulty = Utils::generate_difficulty();
 
-        let BlockHashMeta(nonce, hash) = Block::find_block();
+        let unresolved_block = UnresolvedBlock {
+            index,
+            data,
+            prev_hash,
+            timestamp,
+            difficulty,
+        };
+
+        let BlockHashMeta(nonce, hash) = Block::find_block_hash_meta(unresolved_block);
 
         Block {
             index,
@@ -40,8 +55,6 @@ impl<'b> Block<'b> {
             timestamp,
             hash,
             prev_hash,
-            // todo: generate difficulty systematically
-            difficulty: 4,
             nonce
         }
     }
@@ -50,7 +63,7 @@ impl<'b> Block<'b> {
         format!("{}{}{}{}{}", nonce, index, data, timestamp, prev_hash)
     }
 
-    pub fn find_block(block: &Block) -> BlockHashMeta {
+    pub fn find_block_hash_meta(block: UnresolvedBlock) -> BlockHashMeta {
         let mut nonce = 0;
 
         loop {

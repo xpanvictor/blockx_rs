@@ -4,7 +4,7 @@ use crate::block::Block;
 use crate::utils::Utils;
 
 pub struct DB<'a> {
-    chain: Vec<Block<'a>>,
+    pub chain: Vec<Block<'a>>,
 }
 
 impl DB<'static> {

@@ -70,6 +70,7 @@ impl<'b> Block<'b> {
 
     fn find_block_hash_meta(block: UnresolvedBlock) -> BlockHashMeta {
         let mut nonce = 0;
+        let mut count = 0;
 
         loop {
             let block_merge = Block::block_merge(
@@ -84,6 +85,9 @@ impl<'b> Block<'b> {
             if Utils::scored_difficulty(&block_hash, block.difficulty) {
                 break BlockHashMeta(nonce, block_hash)
             }
+
+            count += 1;
+            println!("Attempt {}", count);
 
             nonce += 1;
         }

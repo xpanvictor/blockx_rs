@@ -10,7 +10,8 @@ pub mod Utils {
     }
 
     pub fn scored_difficulty(hash: &str, difficulty: u32) -> bool {
-        todo!()
+        let difficulty_string = "0".repeat(difficulty as usize);
+        hash.starts_with(&difficulty_string)
     }
 
     pub fn generate_difficulty(

@@ -14,7 +14,7 @@ pub mod Utils {
     }
 
     pub fn generate_difficulty(
-        block_chain: &'static DB,
+        block_chain: &DB,
         unresolved_block: &UnresolvedBlock
     ) -> u32 {
 

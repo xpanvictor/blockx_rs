@@ -34,7 +34,7 @@ pub struct BlockHashMeta(u32, String);
 
 /// Implementations for block data structure
 impl<'b> Block<'b> {
-    pub fn new<'a>(data: &str, block_chain: &'static DB) -> Block<'a> {
+    pub fn new<'a>(data: &str, block_chain: &'a DB) -> Block<'a> {
 
         let latest_block = block_chain.latest_block().unwrap();
         let index = latest_block.index + 1;

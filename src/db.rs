@@ -3,12 +3,12 @@ use crate::constants;
 use crate::block::Block;
 use crate::utils::Utils;
 
-pub struct DB<'a> {
-    pub chain: Vec<Block<'a>>,
+pub struct DB {
+    pub chain: Vec<Block<'static>>,
 }
 
-impl DB<'static> {
-    pub fn new() -> DB<'static> {
+impl DB {
+    pub fn new() -> DB {
         DB {
             chain: vec![
                 Block {

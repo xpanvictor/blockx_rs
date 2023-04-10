@@ -15,7 +15,7 @@ pub mod Utils {
     }
 
     pub fn generate_difficulty(
-        block_chain: &DB,
+        block_db: &DB,
         unresolved_block: &UnresolvedBlock
     ) -> u32 {
 
@@ -27,11 +27,12 @@ pub mod Utils {
            unresolved_block.index != 0
         {
             // ! need access to past few gen_interval blocks
-            let block_len = block_chain.chain.len();
-            let prev_adjusted_block = block_chain.chain.index(
+            let block_chain = &block_db.chain;
+            let block_len = block_chain.len();
+            let prev_adjusted_block = block_chain.index(
                 block_len - (DIFFICULTY_ADJUSTMENT_INTERVAL as usize) - 1
             );
-            let last_mined_block = block_chain.latest_block().unwrap();
+            let last_mined_block = block_db.latest_block().unwrap();
 
             let time_spent = last_mined_block.timestamp - prev_adjusted_block.timestamp;
             let time_expected = DIFFICULTY_ADJUSTMENT_INTERVAL as i64 * BLOCK_GENERATION_INTERVAL as i64;
